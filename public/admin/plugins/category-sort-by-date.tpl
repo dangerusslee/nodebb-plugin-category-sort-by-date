@@ -17,7 +17,7 @@
       timeout: 5000
     })
 
-    socket.emit('admin.date.reindex', {}, function (err) {
+    socket.emit('admin.sortbydate.reindex', {}, function (err) {
       reindexing = false
 
       if (err) {
