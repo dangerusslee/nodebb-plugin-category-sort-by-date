@@ -1,4 +1,5 @@
-// Sort by Title
+// Sort by Date
+'use strict';
 
 let Categories = require.main.require('./src/categories')
 let User = require.main.require('./src/user')
