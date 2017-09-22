@@ -104,13 +104,10 @@ exports.init = (params, next) => {
             tid = tid[tid.length - 1]
             tids.push(tid)
 			  if (reverse) {
-            	console.log('first')
 				  quickSort(tids)
 			  } else {
-				  console.log('second')
 				  quickSort(tids)
 			  }
-			  console.log(tids)
           })
 
           next(null, tids)
