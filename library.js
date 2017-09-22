@@ -71,6 +71,31 @@ exports.init = (params, next) => {
             db[method](set, min, max, start, stop - start, next)
           }
         },
+		function quickSort(items, left, right, next) {
+
+			  var index;
+
+			  if (items.length > 1) {
+
+				  left = typeof left != "number" ? 0 : left;
+				  right = typeof right != "number" ? items.length - 1 : right;
+
+				  index = partition(items, left, right);
+
+				  if (left < index - 1) {
+					  quickSort(items, left, index - 1);
+				  }
+
+				  if (index < right) {
+					  quickSort(items, index, right);
+				  }
+
+			  }
+
+			  next(null, items)
+
+			  return items;
+		},
         function (topicValues, next) {
           let tids = []
 
@@ -79,17 +104,18 @@ exports.init = (params, next) => {
             tid = tid[tid.length - 1]
             tids.push(tid)
 			  if (reverse) {
-				  tids.sort(function (a, b) {
-				  	return a - b;
-				  })
+            	console.log('first')
+				  quickSort(tids)
 			  } else {
-				  tids.sort(function (a, b) {
-				  	return b - a;
-				  })
+				  console.log('second')
+				  quickSort(tids)
 			  }
+			  console.log(tids)
           })
 
           next(null, tids)
+
+
 
 		  tids.sort(function (a, b) {  return a - b;  })
 
@@ -132,6 +158,8 @@ exports.init = (params, next) => {
   })
 }
 
+
+
 function reindex(next) {
   next = next || (() => {})
 
@@ -169,61 +197,15 @@ function reindex(next) {
 exports.prepare = function (data, next) {
   User.getSettings(data.uid, function (err, settings) {
     if (settings.categoryTopicSort === 'a_z') {
-		reindex()
         data.reverse = false
     }
 
     if (settings.categoryTopicSort === 'z_a') {
-		reindex()
         data.reverse = true
     }
 
     next(null, data)
   })
-}
-
-exports.topicEdit = function (data, next) {
-  let topic = data.topic
-
-  Topics.getTopicField(topic.tid, 'title', function (err, title) {
-    if (title !== topic.title) {
-      let oldSlug = utils.slugify(title) || 'topic'
-
-      db.sortedSetRemove('cid:' + topic.cid + ':tids:lex', oldSlug + ':' + topic.tid)
-      db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.title.split('/')[1] + ':' + topic.tid)
-    }
-	reindex()
-    next(null, data)
-  })
-}
-
-exports.topicPost = function (data) {
-  let topic = data.topic
-
-  db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.title.split('/')[1] + ':' + topic.tid)
-	reindex()
-}
-
-exports.topicPurge = function (data) {
-  let tid = data.topic.tid
-
-  db.setAdd('sortbydate:purged', tid)
-	reindex()
-}
-
-exports.topicMove = function (topic) {
-  Topics.getTopicField(topic.tid, 'slug', function (err, title) {
-    db.sortedSetRemove('cid:' + topic.fromCid + ':tids:lex', title.split('/')[1] + ':' + topic.tid)
-    db.sortedSetAdd('cid:' + topic.toCid + ':tids:lex', 0, title.split('/')[1] + ':' + topic.tid)
-	reindex()
-  })
-}
-
-exports.categoryDelete = function (data) {
-  let cid = data.cid
-
-  db.delete('cid:' + cid + ':tids:lex')
-  reindex()
 }
 
 exports.adminBuild = (header, next) => {
