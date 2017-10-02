@@ -1,4 +1,4 @@
-// Sort by Title
+// Sort by Date
 
 let Categories = require.main.require('./src/categories')
 let User = require.main.require('./src/user')
@@ -16,13 +16,13 @@ let utils = require.main.require('./public/src/utils')
 let version = '1.4.0'
 
 exports.init = (params, next) => {
-  winston.info('[sort-by-title] Loading sort by title...')
+  winston.info('[sort-by-title] Loading sort by date...')
 
-  params.router.get('/admin/plugins/category-sort-by-title', params.middleware.admin.buildHeader, renderAdmin)
-  params.router.get('/api/admin/plugins/category-sort-by-title', renderAdmin)
+  params.router.get('/admin/plugins/category-sort-by-date', params.middleware.admin.buildHeader, renderAdmin)
+  params.router.get('/api/admin/plugins/category-sort-by-date', renderAdmin)
 
   function renderAdmin (req, res, next) {
-    res.render('admin/plugins/category-sort-by-title', {})
+    res.render('admin/plugins/category-sort-by-date', {})
   }
 
   let getTopicIds = Categories.getTopicIds
@@ -87,11 +87,11 @@ exports.init = (params, next) => {
 
         next(null, tids)
 
-        db.isSetMembers('sortbytitle:purged', tids, function (err, isMember) {
+        db.isSetMembers('sortbydate:purged', tids, function (err, isMember) {
           for (let i = 0; i < tids.length; i++) {
             if (isMember[i]) {
               db.sortedSetRemove(set, tids[i])
-              db.setRemove('sortbytitle:purged', tids[i])
+              db.setRemove('sortbydate:purged', tids[i])
             }
           }
         })
@@ -104,8 +104,8 @@ exports.init = (params, next) => {
     ], next)
   }
 
-  SocketAdmin.sortbytitle = {}
-  SocketAdmin.sortbytitle.reindex = (socket, data, next) => {
+  SocketAdmin.sortbydate = {}
+  SocketAdmin.sortbydate.reindex = (socket, data, next) => {
     reindex(next)
   }
 
@@ -113,7 +113,7 @@ exports.init = (params, next) => {
 
   if (!(nconf.get('isPrimary') === 'true' && !nconf.get('jobsDisabled'))) return
 
-  db.get('sortbytitle', function (err, ver) {
+  db.get('sortbydate', function (err, ver) {
     if (err) return
     if (ver === version) return
 
@@ -124,7 +124,7 @@ exports.init = (params, next) => {
 function reindex(next) {
   next = next || (() => {})
 
-  winston.info('[sort-by-title] Re-indexing topics...')
+  winston.info('[sort-by-date] Re-indexing topics...')
 
   async.waterfall([
     async.apply(db.getSortedSetRange, 'categories:cid', 0, -1),
@@ -142,14 +142,14 @@ function reindex(next) {
         db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.title.split('/')[1] + ':' + topic.tid, next)
       }, next)
     },
-    async.apply(db.set, 'sortbytitle', version),
-    async.apply(db.delete, 'sortbytitle:purged')
+    async.apply(db.set, 'sortbydate', version),
+    async.apply(db.delete, 'sortbydate:purged')
   ], (err) => {
     next(err)
     if (err) {
       winston.error(err)
     } else {
-      winston.info('[sort-by-title] Finished re-indexing topics.')
+      winston.info('[sort-by-date] Finished re-indexing topics.')
     }
   })
 }
@@ -180,7 +180,7 @@ exports.topicPost = function (data) {
 exports.topicPurge = function (data) {
   let tid = data.topic.tid
 
-  db.setAdd('sortbytitle:purged', tid)
+  db.setAdd('sortbydate:purged', tid)
 }
 
 exports.topicMove = function (topic) {
@@ -198,9 +198,9 @@ exports.categoryDelete = function (data) {
 
 exports.adminBuild = (header, next) => {
   header.plugins.push({
-    route : '/plugins/category-sort-by-title',
+    route : '/plugins/category-sort-by-date',
     icon  : 'fa-sort-alpha-asc',
-    name  : 'Category Sort by Title'
+    name  : 'Category Sort by Date'
   })
 
   next(null, header)
