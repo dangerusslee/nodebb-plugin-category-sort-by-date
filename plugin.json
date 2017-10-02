@@ -1,7 +1,7 @@
 {
-  "id": "nodebb-plugin-category-sort-by-title",
+  "id": "nodebb-plugin-category-sort-by-date",
   "name": "Sort by Title",
-  "description": "Sort category topics alphabetically.",
+  "description": "Sort category topics by date.",
   "library": "./library.js",
   "hooks": [
     { "hook": "static:app.load", "method": "init" },
