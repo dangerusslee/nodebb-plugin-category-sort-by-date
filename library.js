@@ -1,22 +1,22 @@
 // Sort by Date
 
-let Categories = require.main.require('./src/categories')
-let User = require.main.require('./src/user')
-let Topics = require.main.require('./src/topics')
-let SocketAdmin = require.main.require('./src/socket.io/admin')
-let db = require.main.require('./src/database')
+var Categories = require.main.require('./src/categories')
+var User = require.main.require('./src/user')
+var Topics = require.main.require('./src/topics')
+var SocketAdmin = require.main.require('./src/socket.io/admin')
+var db = require.main.require('./src/database')
 
-let async = require.main.require('async')
-let winston = require.main.require('winston')
-let nconf = require.main.require('nconf')
-let _ = require.main.require('lodash')
+var async = require.main.require('async')
+var winston = require.main.require('winston')
+var nconf = require.main.require('nconf')
+var _ = require.main.require('lodash')
 
-let utils = require.main.require('./public/src/utils')
+var utils = require.main.require('./public/src/utils')
 
-let version = '1.4.0'
+var version = '1.4.0'
 
 exports.init = (params, next) => {
-  winston.info('[sort-by-title] Loading sort by date...')
+  winston.info('[sort-by-date] Loading sort by date...')
 
   params.router.get('/admin/plugins/category-sort-by-date', params.middleware.admin.buildHeader, renderAdmin)
   params.router.get('/api/admin/plugins/category-sort-by-date', renderAdmin)
@@ -25,16 +25,16 @@ exports.init = (params, next) => {
     res.render('admin/plugins/category-sort-by-date', {})
   }
 
-  let getTopicIds = Categories.getTopicIds
+	var getTopicIds = Categories.getTopicIds
 
   Categories.getTopicIds = function (data, next) {
-    let { sort, cid, start, stop, } = data
+	  var { sort, cid, start, stop, } = data
 
     if (sort !== 'a_z' && sort !== 'z_a') return getTopicIds(data, next)
 
-    let pinnedTids
+	  var pinnedTids
 
-    let method, min, max, set
+	  var method, min, max, set
 
     if (sort === 'z_a') {
       method = 'getSortedSetRevRangeByLex'
@@ -48,7 +48,7 @@ exports.init = (params, next) => {
 
     async.waterfall([
       next => {
-        let dataForPinned = _.cloneDeep(data)
+		var dataForPinned = _.cloneDeep(data)
 
         dataForPinned.start = 0
         dataForPinned.stop = -1
@@ -56,15 +56,15 @@ exports.init = (params, next) => {
         Categories.getPinnedTids(dataForPinned, next)
       },
       (_pinnedTids, next) => {
-        let totalPinnedCount = _pinnedTids.length
+		  var totalPinnedCount = _pinnedTids.length
 
         pinnedTids = _pinnedTids.slice(start, stop === -1 ? undefined : stop + 1);
 
-        let pinnedCount = pinnedTids.length;
+		  var pinnedCount = pinnedTids.length;
 
-        let topicsPerPage = stop - start + 1;
+		  var topicsPerPage = stop - start + 1;
 
-        let normalTidsToGet = Math.max(0, topicsPerPage - pinnedCount);
+		  var normalTidsToGet = Math.max(0, topicsPerPage - pinnedCount);
 
         if (!normalTidsToGet && stop !== -1) return next(null, [])
 
@@ -77,7 +77,7 @@ exports.init = (params, next) => {
         db[method](set, min, max, start, stop - start, next)
       },
       (topicValues, next) => {
-        let tids = []
+		  var tids = []
 
         topicValues.forEach(function (value) {
           tid = value.split(':')
@@ -129,7 +129,7 @@ function reindex(next) {
   async.waterfall([
     async.apply(db.getSortedSetRange, 'categories:cid', 0, -1),
     function (cids, next) {
-      let keys = cids.map(function (cid) { return 'cid:' + cid + ':tids:lex' })
+		var keys = cids.map(function (cid) { return 'cid:' + cid + ':tids:lex' })
 
       db.deleteAll(keys, next)
     },
@@ -155,11 +155,11 @@ function reindex(next) {
 }
 
 exports.topicEdit = function (data, next) {
-  let topic = data.topic
+	var topic = data.topic
 
   Topics.getTopicField(topic.tid, 'title', function (err, title) {
     if (title !== topic.title) {
-      let oldSlug = utils.slugify(title) || 'topic'
+		var oldSlug = utils.slugify(title) || 'topic'
 
       db.sortedSetRemove('cid:' + topic.cid + ':tids:lex', oldSlug + ':' + topic.tid)
       db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.slug.split('/')[1] + ':' + topic.tid)
@@ -170,7 +170,7 @@ exports.topicEdit = function (data, next) {
 }
 
 exports.topicPost = function (data) {
-  let topic = data.topic
+	var topic = data.topic
 
   db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.slug.split('/')[1] + ':' + topic.tid)
 
@@ -178,7 +178,7 @@ exports.topicPost = function (data) {
 }
 
 exports.topicPurge = function (data) {
-  let tid = data.topic.tid
+	var tid = data.topic.tid
 
   db.setAdd('sortbydate:purged', tid)
 }
@@ -191,7 +191,7 @@ exports.topicMove = function (topic) {
 }
 
 exports.categoryDelete = function (data) {
-  let cid = data.cid
+	var cid = data.cid
 
   db.delete('cid:' + cid + ':tids:lex')
 }
