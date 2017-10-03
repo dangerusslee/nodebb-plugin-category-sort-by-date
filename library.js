@@ -79,6 +79,7 @@ exports.init = (params, next) => {
       },
       (topicValues, next) => {
         let tids = []
+		  let tid = ''
 
         topicValues.forEach(function (value) {
           tid = value.split(':')
