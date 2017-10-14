@@ -1,5 +1,5 @@
 {
-  "id": "nodebb-plugin-category-sort-by-date",
+  "id": "nodebb-plugin-category-sort-by-date-en",
   "name": "Sort by Title",
   "description": "Sort category topics by date.",
   "library": "./library.js",
