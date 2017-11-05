@@ -14,7 +14,7 @@ let _ = require.main.require('lodash')
 
 let utils = require.main.require('./public/src/utils')
 
-let version = '1.4.5'
+let version = '1.4.8'
 
 exports.init = (params, next) => {
   winston.info('[sort-by-date] Loading sort by date...')
@@ -31,13 +31,13 @@ exports.init = (params, next) => {
   Categories.getTopicIds = function (data, next) {
     let { sort, cid, start, stop, } = data
 
-    if (sort !== 'a_z' && sort !== 'z_a') return getTopicIds(data, next)
+    if (sort !== 'topics_newest_to_oldest' && sort !== 'topics_oldest_to_newest') return getTopicIds(data, next)
 
     let pinnedTids
 
     let method, min, max, set
 
-    if (sort === 'z_a') {
+    if (sort === 'topics_oldest_to_newest') {
       method = 'getSortedSetRevRangeByLex'
       min = '+'
       max = '-'
@@ -79,7 +79,7 @@ exports.init = (params, next) => {
       },
       (topicValues, next) => {
         let tids = []
-		  let tid = ''
+		    let tid = ''
 
         topicValues.forEach(function (value) {
           tid = value.split(':')
@@ -137,11 +137,11 @@ function reindex(next) {
     },
     async.apply(db.getSortedSetRange, 'topics:tid', 0, -1),
     function (tids, next) {
-      Topics.getTopicsFields(tids, ['tid', 'cid', 'title'], next)
+      Topics.getTopicsFields(tids, ['tid', 'cid', 'timestamp'], next)
     },
     function (topics, next) {
       async.each(topics, function (topic, next) {
-        db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.title.split('/')[1] + ':' + topic.tid, next)
+        db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.timestamp + ':' + topic.tid, next)
       }, next)
     },
     async.apply(db.set, 'sortbydate', version),
@@ -156,39 +156,22 @@ function reindex(next) {
   })
 }
 
-exports.topicEdit = function (data, next) {
-  let topic = data.topic
-
-  Topics.getTopicField(topic.tid, 'title', function (err, title) {
-    if (title !== topic.title) {
-      let oldSlug = utils.slugify(title) || 'topic'
-
-      db.sortedSetRemove('cid:' + topic.cid + ':tids:lex', oldSlug + ':' + topic.tid)
-      db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.slug.split('/')[1] + ':' + topic.tid)
-    }
-
-    next(null, data)
-  })
-}
-
 exports.topicPost = function (data) {
   let topic = data.topic
 
-  db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.slug.split('/')[1] + ':' + topic.tid)
+  db.sortedSetAdd('cid:' + topic.cid + ':tids:lex', 0, topic.timestamp + ':' + topic.tid)
 
-	reindex()
 }
 
 exports.topicPurge = function (data) {
-  let tid = data.topic.tid
-
-  db.setAdd('sortbydate:purged', tid)
+  let topic = data.topic
+  db.sortedSetRemove('cid:' + topic.cid + ':tids:lex', topic.timestamp + ':' + topic.tid)
 }
 
 exports.topicMove = function (topic) {
-  Topics.getTopicField(topic.tid, 'slug', function (err, slug) {
-    db.sortedSetRemove('cid:' + topic.fromCid + ':tids:lex', slug.split('/')[1] + ':' + topic.tid)
-    db.sortedSetAdd('cid:' + topic.toCid + ':tids:lex', 0, slug.split('/')[1] + ':' + topic.tid)
+  Topics.getTopicField(topic.tid, 'timestamp', function (err, timestamp) {
+    db.sortedSetRemove('cid:' + topic.fromCid + ':tids:lex', timestamp + ':' + topic.tid)
+    db.sortedSetAdd('cid:' + topic.toCid + ':tids:lex', 0, timestamp + ':' + topic.tid)
   })
 }
 

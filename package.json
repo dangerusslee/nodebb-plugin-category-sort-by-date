@@ -1,11 +1,11 @@
 {
-  "name": "nodebb-plugin-category-sort-by-date-en",
-  "version": "0.0.1",
+  "name": "nodebb-plugin-category-sort-by-date",
+  "version": "1.4.8",
   "description": "A starter kit for quickly creating NodeBB plugins",
   "main": "library.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date-en"
+    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date"
   },
   "keywords": [
     "nodebb",
@@ -20,7 +20,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date-en/issues"
+    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date/issues"
   },
   "readmeFilename": "README.md",
   "nbbpm": {
