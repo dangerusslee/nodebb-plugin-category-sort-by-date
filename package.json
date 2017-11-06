@@ -1,107 +1,29 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "nodebb-plugin-category-sort-by-date@1.4.6",
-        "scope": null,
-        "escapedName": "nodebb-plugin-category-sort-by-date",
-        "name": "nodebb-plugin-category-sort-by-date",
-        "rawSpec": "1.4.6",
-        "spec": "1.4.6",
-        "type": "version"
-      },
-      "/home/user/nodebb"
-    ],
-    [
-      {
-        "raw": "nodebb-plugin-category-sort-by-date@1.4.6",
-        "scope": null,
-        "escapedName": "nodebb-plugin-category-sort-by-date",
-        "name": "nodebb-plugin-category-sort-by-date",
-        "rawSpec": "1.4.6",
-        "spec": "1.4.6",
-        "type": "version"
-      },
-      "/home/user/nodebb"
-    ]
-  ],
-  "_from": "nodebb-plugin-category-sort-by-date@1.4.6",
-  "_id": "nodebb-plugin-category-sort-by-date@1.4.6",
-  "_inCache": true,
-  "_location": "/nodebb-plugin-category-sort-by-date",
-  "_nodeVersion": "7.10.0",
-  "_npmOperationalInternal": {
-    "host": "s3://npm-registry-packages",
-    "tmp": "tmp/nodebb-plugin-category-sort-by-date-1.4.6.tgz_1505987219345_0.008965034037828445"
+  "name": "nodebb-plugin-category-sort-by-date",
+  "version": "1.4.8",
+  "description": "A starter kit for quickly creating NodeBB plugins",
+  "main": "library.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date"
   },
-  "_npmUser": {
-    "name": "dreadfull",
-    "email": "deathwings9@gmail.com"
-  },
-  "_npmVersion": "4.2.0",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "nodebb-plugin-category-sort-by-date@1.4.6",
-    "scope": null,
-    "escapedName": "nodebb-plugin-category-sort-by-date",
-    "name": "nodebb-plugin-category-sort-by-date",
-    "rawSpec": "0.3.3",
-    "spec": "0.3.3",
-    "type": "version"
-  },
-  "_requiredBy": [
-    "#USER"
-  ],
-  "_resolved": "https://registry.npmjs.org/nodebb-plugin-category-sort-by-date/-/nodebb-plugin-category-sort-by-date-1.4.6.tgz",
-  "_shasum": "03fa36ade54f4ccd8e65aa1b87220bdcae4a7796",
-  "_shrinkwrap": null,
-  "_spec": "nodebb-plugin-category-sort-by-date@1.4.6",
-  "_where": "/home/user/nodebb",
-  "author": {
-    "name": "Dreadfull",
-    "email": "deathwings9@gmail.com",
-    "url": "https://dreadhomepage.com"
-  },
-  "bugs": {
-    "url": "https://github.com/Serhey/nodebb-plugin-category-sort-by-date/issues"
-  },
-  "dependencies": {},
-  "description": "Sort category topics by date.",
-  "devDependencies": {},
-  "directories": {},
-  "dist": {
-    "shasum": "03fa36ade54f4ccd8e65aa1b87220bdcae4a7796",
-    "tarball": "https://registry.npmjs.org/nodebb-plugin-category-sort-by-date/-/nodebb-plugin-category-sort-by-date-1.4.6.tgz"
-  },
-  "homepage": "https://github.com/Serhey/nodebb-plugin-category-sort-by-date",
   "keywords": [
     "nodebb",
     "plugin",
-    "category",
     "sort",
-    "title",
-    "topics",
-    "alphabetically"
+    "by",
+    "date"
   ],
+  "author": {
+    "name": "dangerusslee",
+    "email": "dangerusslee@phatwalletforums.com"
+  },
   "license": "MIT",
-  "main": "./library.js",
-  "maintainers": [
-    {
-      "name": "dreadfull",
-      "email": "deathwings9@gmail.com"
-    }
-  ],
-  "name": "nodebb-plugin-category-sort-by-date",
+  "bugs": {
+    "url": "https://github.com/dangerusslee/nodebb-plugin-category-sort-by-date/issues"
+  },
+  "readmeFilename": "README.md",
   "nbbpm": {
-    "compatibility": "^1.5.0"
-  },
-  "optionalDependencies": {},
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Serhey/nodebb-plugin-category-sort-by-date.git"
-  },
-  "scripts": {},
-  "version": "1.4.6"
+    "compatibility": "^1.6.0"
+  }
 }
-
