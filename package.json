@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-category-sort-by-date",
-  "version": "1.4.9",
+  "version": "1.4.10",
   "description": "A starter kit for quickly creating NodeBB plugins",
   "main": "library.js",
   "repository": {
@@ -15,7 +15,7 @@
     "date"
   ],
   "author": {
-    "name": "dreadfull",
+    "name": "Dreadfull",
     "email": "deathwings9@gmail.com"
   },
   "license": "MIT",
