@@ -14,7 +14,9 @@ let _ = require.main.require('lodash')
 
 let utils = require.main.require('./public/src/utils')
 
-let version = '1.0.1'
+let version = '1.0.2'
+let topicCount = 0;
+let topicsProcessed = 0;
 
 exports.init = (params, next) => {
   winston.info('[category-sort-by-topic-date] Loading category topics sort by date...')
@@ -23,8 +25,12 @@ exports.init = (params, next) => {
   params.router.get('/api/admin/plugins/category-sort-by-topic-date', renderAdmin)
 
   function renderAdmin (req, res, next) {
-    res.render('admin/plugins/category-sort-by-topic-date', {})
+    db.getObjectFields('global', ['topicCount'], function (err, data){
+      topicCount = data.topicCount;
+      res.render('admin/plugins/category-sort-by-topic-date', data);
+    });
   }
+  
 
   let getTopicIds = Categories.getTopicIds
 
@@ -97,16 +103,23 @@ exports.init = (params, next) => {
     ], next)
   }
 
-  SocketAdmin.categorysortbytopicdate = {}
-  SocketAdmin.categorysortbytopicdate.reindex = (socket, data, next) => {
+  SocketAdmin.plugins.categorySortByTopicDate = {}
+  SocketAdmin.plugins.categorySortByTopicDate.reindex = (socket, data, next) => {
     reindex(next)
   }
-
+  SocketAdmin.plugins.categorySortByTopicDate.checkProgress = function(socket, data, callback) {
+    var topicsPercent = topicCount ? (topicsProcessed / topicCount) * 100 : 0;
+    var checkProgress = {
+      topicsPercent: Math.min(100, topicsPercent.toFixed(2)),
+      topicsProcessed: topicsPercent >= 100 ? topicCount : topicsProcessed
+    };
+    callback(null, checkProgress);
+  };
   next()
 
   if (!(nconf.get('isPrimary') === 'true' && !nconf.get('jobsDisabled'))) return
 
-  db.get('categorysortbytopicdate', function (err, ver) {
+  db.get('categorySortByTopicDate', function (err, ver) {
     if (err) return
     if (ver === version) return
 
@@ -133,9 +146,10 @@ function reindex(next) {
     function (topics, next) {
       async.each(topics, function (topic, next) {
         db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', 0, topic.timestamp + ':' + topic.tid, next)
+        topicsProcessed++
       }, next)
     },
-    async.apply(db.set, 'categorysortbytopicdate', version),
+    async.apply(db.set, 'categorySortByTopicDate', version),
   ], (err) => {
     next(err)
     if (err) {
