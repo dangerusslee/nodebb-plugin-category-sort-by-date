@@ -14,7 +14,7 @@ let _ = require.main.require('lodash')
 
 let utils = require.main.require('./public/src/utils')
 
-let version = '1.0.0'
+let version = '1.0.1'
 
 exports.init = (params, next) => {
   winston.info('[category-sort-by-topic-date] Loading category topics sort by date...')
