@@ -14,16 +14,16 @@ let _ = require.main.require('lodash')
 
 let utils = require.main.require('./public/src/utils')
 
-let version = '1.4.8'
+let version = '1.0.0'
 
 exports.init = (params, next) => {
-  winston.info('[sort-by-date] Loading sort by date...')
+  winston.info('[category-sort-by-topic-date] Loading category topics sort by date...')
 
-  params.router.get('/admin/plugins/category-sort-by-date', params.middleware.admin.buildHeader, renderAdmin)
-  params.router.get('/api/admin/plugins/category-sort-by-date', renderAdmin)
+  params.router.get('/admin/plugins/category-sort-by-topic-date', params.middleware.admin.buildHeader, renderAdmin)
+  params.router.get('/api/admin/plugins/category-sort-by-topic-date', renderAdmin)
 
   function renderAdmin (req, res, next) {
-    res.render('admin/plugins/category-sort-by-date', {})
+    res.render('admin/plugins/category-sort-by-topic-date', {})
   }
 
   let getTopicIds = Categories.getTopicIds
@@ -97,8 +97,8 @@ exports.init = (params, next) => {
     ], next)
   }
 
-  SocketAdmin.sortbydate = {}
-  SocketAdmin.sortbydate.reindex = (socket, data, next) => {
+  SocketAdmin.categorysortbytopicdate = {}
+  SocketAdmin.categorysortbytopicdate.reindex = (socket, data, next) => {
     reindex(next)
   }
 
@@ -106,7 +106,7 @@ exports.init = (params, next) => {
 
   if (!(nconf.get('isPrimary') === 'true' && !nconf.get('jobsDisabled'))) return
 
-  db.get('sortbydate', function (err, ver) {
+  db.get('categorysortbytopicdate', function (err, ver) {
     if (err) return
     if (ver === version) return
 
@@ -117,7 +117,7 @@ exports.init = (params, next) => {
 function reindex(next) {
   next = next || (() => {})
 
-  winston.info('[sort-by-date] Re-indexing topics...')
+  winston.info('[category-sort-by-topic-date] Re-indexing topics...')
 
   async.waterfall([
     async.apply(db.getSortedSetRange, 'categories:cid', 0, -1),
@@ -135,13 +135,13 @@ function reindex(next) {
         db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', 0, topic.timestamp + ':' + topic.tid, next)
       }, next)
     },
-    async.apply(db.set, 'sortbydate', version),
+    async.apply(db.set, 'categorysortbytopicdate', version),
   ], (err) => {
     next(err)
     if (err) {
       winston.error(err)
     } else {
-      winston.info('[sort-by-date] Finished re-indexing topics.')
+      winston.info('[category-sort-by-topic-date] Finished re-indexing topics.')
     }
   })
 }
@@ -173,9 +173,9 @@ exports.categoryDelete = function (data) {
 
 exports.adminBuild = (header, next) => {
   header.plugins.push({
-    route : '/plugins/category-sort-by-date',
+    route : '/plugins/category-sort-by-topic-date',
     icon  : 'fa-sort-alpha-asc',
-    name  : 'Category Sort by Date'
+    name  : 'Category Sort by Topic Date'
   })
 
   next(null, header)

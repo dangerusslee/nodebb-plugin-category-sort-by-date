@@ -1,6 +1,6 @@
 {
-  "id": "nodebb-plugin-category-sort-by-date",
-  "name": "Sort by Date",
+  "id": "nodebb-plugin-category-sort-by-topic-date",
+  "name": "Category Sort by Topic Date",
   "description": "Sort category topics by date.",
   "library": "./library.js",
   "hooks": [

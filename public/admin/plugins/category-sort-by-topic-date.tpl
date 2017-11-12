@@ -17,18 +17,18 @@
       timeout: 5000
     })
 
-    socket.emit('admin.sortbydate.reindex', {}, function (err) {
+    socket.emit('admin.categorysortbytopicdate.reindex', {}, function (err) {
       reindexing = false
 
       if (err) {
         app.alert({
-          title: 'Sort-by-date',
+          title: 'Category-sort-by-topic-date',
           message: 'Error re-indexing topics:<br>' + err.message,
           timeout: 5000
         })
       } else {
         app.alert({
-          title: 'Sort-by-date',
+          title: 'Category-sort-by-topic-date',
           message: 'Re-index complete!<br>Took ' + ((Date.now() - timestamp)/1000) + ' seconds.',
           timeout: 5000
         })
