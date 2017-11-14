@@ -9,7 +9,12 @@
     { "hook": "action:topic.post", "method": "topicPost" },
     { "hook": "action:topic.purge", "method": "topicPurge" },
     { "hook": "action:category.delete", "method": "categoryDelete" },
-    { "hook": "filter:admin.header.build", "method": "adminBuild" }
+    { "hook": "filter:admin.header.build", "method": "adminBuild" },
+    { "hook": "filter:categories.getSortedSetRangeDirection", "method": "getSortedSetRangeDirection"},
+    { "hook": "filter:categories.buildTopicsSortedSet", "method": "buildTopicsSortedSet"}
+    
+    
+
   ],
   "scripts": [
     "./client.js"

@@ -14,7 +14,7 @@ let _ = require.main.require('lodash')
 
 let utils = require.main.require('./public/src/utils')
 
-let version = '1.0.2'
+let version = '1.0.3'
 let topicCount = 0;
 let topicsProcessed = 0;
 
@@ -29,78 +29,6 @@ exports.init = (params, next) => {
       topicCount = data.topicCount;
       res.render('admin/plugins/category-sort-by-topic-date', data);
     });
-  }
-  
-
-  let getTopicIds = Categories.getTopicIds
-
-  Categories.getTopicIds = function (data, next) {
-    let { sort, cid, start, stop, } = data
-
-    if (sort !== 'topics_newest_to_oldest' && sort !== 'topics_oldest_to_newest') return getTopicIds(data, next)
-
-    let pinnedTids
-
-    let method, min, max, set
-
-    if (sort === 'topics_oldest_to_newest') {
-      method = 'getSortedSetRevRangeByLex'
-      min = '+'
-      max = '-'
-    } else {
-      method = 'getSortedSetRangeByLex'
-      min = '-'
-      max = '+'
-    }
-
-    async.waterfall([
-      next => {
-        let dataForPinned = _.cloneDeep(data)
-
-        dataForPinned.start = 0
-        dataForPinned.stop = -1
-
-        Categories.getPinnedTids(dataForPinned, next)
-      },
-      (_pinnedTids, next) => {
-        let totalPinnedCount = _pinnedTids.length
-
-        pinnedTids = _pinnedTids.slice(start, stop === -1 ? undefined : stop + 1);
-
-        let pinnedCount = pinnedTids.length;
-
-        let topicsPerPage = stop - start + 1;
-
-        let normalTidsToGet = Math.max(0, topicsPerPage - pinnedCount);
-
-        if (!normalTidsToGet && stop !== -1) return next(null, [])
-
-        set = `cid:${cid}:tids:csbt`
-
-        if (start > 0 && totalPinnedCount) start -= totalPinnedCount - pinnedCount
-
-        stop = stop === -1 ? stop : start + normalTidsToGet - 1
-
-        db[method](set, min, max, start, stop - start, next)
-      },
-      (topicValues, next) => {
-        let tids = []
-		    let tid = ''
-
-        topicValues.forEach(function (value) {
-          tid = value.split(':')
-          tid = tid[tid.length - 1]
-          tids.push(tid)
-        })
-
-        next(null, tids)
-      },
-      (normalTids, next) => {
-        normalTids = normalTids.filter(tid => pinnedTids.indexOf(tid) === -1)
-
-        next(null, pinnedTids.concat(normalTids))
-      },
-    ], next)
   }
 
   SocketAdmin.plugins.categorySortByTopicDate = {}
@@ -145,7 +73,7 @@ function reindex(next) {
     },
     function (topics, next) {
       async.each(topics, function (topic, next) {
-        db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', 0, topic.timestamp + ':' + topic.tid, next)
+        db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', topic.timestamp, topic.tid, next)
         topicsProcessed++
       }, next)
     },
@@ -163,19 +91,19 @@ function reindex(next) {
 exports.topicPost = function (data) {
   let topic = data.topic
 
-  db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', 0, topic.timestamp + ':' + topic.tid)
+  db.sortedSetAdd('cid:' + topic.cid + ':tids:csbt', topic.timestamp,  topic.tid)
 
 }
 
 exports.topicPurge = function (data) {
   let topic = data.topic
-  db.sortedSetRemove('cid:' + topic.cid + ':tids:csbt', topic.timestamp + ':' + topic.tid)
+  db.sortedSetRemove('cid:' + topic.cid + ':tids:csbt',  topic.tid)
 }
 
 exports.topicMove = function (topic) {
   Topics.getTopicField(topic.tid, 'timestamp', function (err, timestamp) {
-    db.sortedSetRemove('cid:' + topic.fromCid + ':tids:csbt', timestamp + ':' + topic.tid)
-    db.sortedSetAdd('cid:' + topic.toCid + ':tids:csbt', 0, timestamp + ':' + topic.tid)
+    db.sortedSetRemove('cid:' + topic.fromCid + ':tids:csbt', topic.tid)
+    db.sortedSetAdd('cid:' + topic.toCid + ':tids:csbt', timestamp, topic.tid)
   })
 }
 
@@ -193,4 +121,19 @@ exports.adminBuild = (header, next) => {
   })
 
   next(null, header)
+}
+
+exports.getSortedSetRangeDirection = (data, callback) => {
+  if (data.sort==='topics_newest_to_oldest' || data.sort ==="topics_oldest_to_newest") {
+    data.direction = data.sort === 'topics_newest_to_oldest' ? 'highest-to-lowest' : 'lowest-to-highest';
+  }
+
+  return callback(null, data);
+}
+
+exports.buildTopicsSortedSet = (data, callback) => {
+  if (data.data.sort==='topics_newest_to_oldest' || data.data.sort ==="topics_oldest_to_newest") {
+    data.set="cid:" + data.data.cid + ":tids:csbt";
+  }
+  return callback(null, data);
 }
